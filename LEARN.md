@@ -186,10 +186,14 @@ détections sur des journaux JSONL et propose la requête KQL équivalente pour 
     « jamais » qu'après la MFA et la protection par mot de passe.
 
 17. **Comment as-tu testé l'outil ?**
-    148 tests : chaque contrôle se déclenche sur l'export vulnérable et reste muet sur
+    159 tests : chaque contrôle se déclenche sur l'export vulnérable et reste muet sur
     l'export durci, une seule modification d'un export propre déclenche le bon contrôle,
-    limites de chaque seuil, détections avec quasi-incidents, scores, refus des secrets, échappement HTML, et un test qui vérifie que le script
-    d'export n'appelle aucune cmdlet de modification.
+    limites de chaque seuil, détections avec quasi-incidents, fenêtres de temps (60 min,
+    24 h) et référence de pays par utilisateur, scores, refus des secrets, échappement HTML,
+    et un test qui vérifie que le script d'export n'appelle aucune cmdlet de modification.
+    J'ai aussi fait des mutations à la main (changer un seuil, retirer une condition) pour
+    vérifier que les tests échouent ; une revue en a trouvé qui passaient, d'où 11 tests
+    ajoutés.
 
 18. **As-tu fait ce projet seul et l'as-tu lancé sur une vraie entreprise ?**
     Je l'ai construit avec l'aide de l'IA, sur des données synthétiques d'une PME fictive.
@@ -202,7 +206,7 @@ détections sur des journaux JSONL et propose la requête KQL équivalente pour 
 > Développement d'un outil Python d'audit hors ligne de la configuration Microsoft 365 /
 > Entra ID (24 contrôles inspirés du CIS et de CISA SCuBA, score de risque, plan de
 > remédiation) et de 6 détections sur journaux de connexion et d'audit mappées MITRE ATT&CK
-> avec requêtes KQL, validé sur des **données synthétiques** (148 tests).
+> avec requêtes KQL, validé sur des **données synthétiques** (159 tests).
 
 ## 7. À ne jamais dire
 

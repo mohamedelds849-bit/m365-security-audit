@@ -6,7 +6,7 @@
     "audit": "audit_attack.jsonl"
   },
   "events": {
-    "signins": 330,
+    "signins": 333,
     "audit": 7
   },
   "rules_run": [

@@ -203,8 +203,9 @@ def test_report_only_policy_does_not_protect(minimal, cfg):
     assert any("non appliquée" in e for e in f["M365-CA-004"].evidence)
 
 
-def test_legacy_policy_must_cover_both_client_types(minimal, cfg):
-    _pol(minimal, "CA02 legacy")["clientAppTypes"] = ["exchangeActiveSync"]
+@pytest.mark.parametrize("types", [["exchangeActiveSync"], ["other"]])
+def test_legacy_policy_must_cover_both_client_types(minimal, cfg, types):
+    _pol(minimal, "CA02 legacy")["clientAppTypes"] = types
     assert "M365-CA-004" in fired(minimal, cfg)
 
 

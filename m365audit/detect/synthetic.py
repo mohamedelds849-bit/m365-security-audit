@@ -114,9 +114,9 @@ def benign() -> tuple[list[dict], list[dict]]:
         s.append(signin(dt, user, OFFICE_IP, AGADIR, result=50126))
         s.append(signin(dt + timedelta(minutes=1), user, OFFICE_IP, AGADIR))
     # --- near-miss 2: 12 users fail from Taroudant, but spread over 2h45 (max 5 per hour)
-    for i, user in enumerate(MEMBERS[:12]):
-        if user in SCRIPTED:
-            continue
+    # (12 distinct users: scripted users are skipped BEFORE slicing, otherwise only 9 remain and
+    # the near-miss would be below the user threshold even with an unlimited window)
+    for i, user in enumerate([u for u in MEMBERS if u not in SCRIPTED][:12]):
         dt = _at(2, 8, 0) + timedelta(minutes=15 * i)
         s.append(signin(dt, user, TAROUDANT_IP, TAROUDANT, result=50126))
     # --- near-miss 3: 4 MFA denials then success (threshold is 5)

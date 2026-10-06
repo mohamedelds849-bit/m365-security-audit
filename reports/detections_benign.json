@@ -6,7 +6,7 @@
     "audit": "audit_benign.jsonl"
   },
   "events": {
-    "signins": 305,
+    "signins": 308,
     "audit": 5
   },
   "rules_run": [

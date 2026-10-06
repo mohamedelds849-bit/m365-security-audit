@@ -18,8 +18,8 @@ Six teaching-grade rules in `m365audit/detect/rules.py`, run with
 
 | Dataset | Sign-ins | Audit events | Alerts |
 |---|---|---|---|
-| `data/logs/*_benign.jsonl` | 305 | 5 | **0** (includes 8 deliberate near-misses: 9-user burst, 12 failures spread over 2h45, 4 MFA denials, 5 denials over 2 h, one failed IMAP, Agadir -> Casablanca in 1 h, real Paris trip, low-privilege consent) |
-| `data/logs/*_attack.jsonl` | 330 | 7 | **6**: one per rule, 1 critical / 4 high / 1 medium |
+| `data/logs/*_benign.jsonl` | 308 | 5 | **0** (includes 8 deliberate near-misses: 9-user burst, 12 users failing from one IP spread over 2h45, 4 MFA denials, 5 denials over 2 h, one failed IMAP, Agadir -> Casablanca in 1 h, real Paris trip, low-privilege consent) |
+| `data/logs/*_attack.jsonl` | 333 | 7 | **6**: one per rule, 1 critical / 4 high / 1 medium |
 
 Attack alerts: DET-001 14 accounts from `203.0.113.45` with a later success for one of them,
 DET-003 that account over IMAP4, DET-002 7 denials in 18 min then approval, DET-004 Agadir ->

@@ -131,12 +131,12 @@ used for SPF/DKIM/DMARC) is the former T1672. They describe what the weakness ma
 | `agrisouss_m365_vulnerable.json` (34 users, 2 CA policies) | **80/100 critique**, 24 findings (2 critical, 10 high, 11 medium, 1 low) |
 | `agrisouss_m365_quickwins.json` (quick-win actions applied) | **48/100 modéré**, 10 findings, all 30-day / 90-day efforts |
 | `agrisouss_m365_hardened.json` (39 users, 5 CA policies) | **0/100 faible**, 0 findings |
-| `signins_benign` + `audit_benign` (305 + 5 events, 8 near-misses) | **0 alerts** |
-| `signins_attack` + `audit_attack` (330 + 7 events) | **6 alerts**: 1 critical, 4 high, 1 medium (one per rule) |
+| `signins_benign` + `audit_benign` (308 + 5 events, 8 near-misses) | **0 alerts** |
+| `signins_attack` + `audit_attack` (333 + 7 events) | **6 alerts**: 1 critical, 4 high, 1 medium (one per rule) |
 
-Tests: **148 passing** (`python -m pytest`): every check fires on the vulnerable export and
+Tests: **159 passing** (`python -m pytest`): every check fires on the vulnerable export and
 is silent on the hardened one, single-mutation tests, threshold boundaries, licence logic,
-detection thresholds and near-misses, scores, secret refusal, CLI exit codes, HTML escaping, and a static check that the export
+detection thresholds, time windows, per-user baseline and near-misses, scores, secret refusal, CLI exit codes, HTML escaping, and a static check that the export
 script calls no tenant-modifying cmdlet.
 
 ## Limitations (read before trusting a result)
