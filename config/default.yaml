@@ -1,0 +1,86 @@
+# Default thresholds for m365-security-audit (configuration checks AND log detections).
+# Copy this file, change values, and pass it with --config my.yaml.
+# Each value is justified in docs/SCORING.md, docs/DETECTIONS.md or in the check's reference.
+
+thresholds:
+  max_global_admins: 4          # CIS / Microsoft: fewer than 5 Global Administrators
+  min_global_admins: 2          # at least 2 (one of them can be a break-glass account)
+  stale_days: 90                # enabled account without sign-in for > 90 days
+  stale_guest_days: 90          # guests are reviewed at least as strictly as members
+  min_sspr_methods: 2           # SSPR must require 2 methods (CIS / SCuBA)
+  password_expiration_ok_days: 0  # 0 = "never expire" expected (NIST SP 800-63B, Microsoft)
+  max_ca_exclusions: 2          # users excluded from a CA policy beyond break-glass accounts
+  anyone_link_max_days: 30      # max lifetime of SharePoint "Anyone" links if they are allowed
+
+# Directory roles considered privileged (Microsoft "Privileged roles and permissions" list,
+# subset relevant for an SME). Names are the role display names in Entra ID.
+privileged_roles:
+  - Global Administrator
+  - Privileged Role Administrator
+  - Privileged Authentication Administrator
+  - Security Administrator
+  - Exchange Administrator
+  - SharePoint Administrator
+  - User Administrator
+  - Authentication Administrator
+  - Application Administrator
+  - Cloud Application Administrator
+  - Conditional Access Administrator
+  - Helpdesk Administrator
+  - Billing Administrator
+  - Teams Administrator
+  - Intune Administrator
+
+# Microsoft Graph / Exchange permissions considered high privilege for an OAuth app.
+# Used both by the configuration check M365-APP-002 and by the detection DET-006.
+high_privilege_permissions:
+  - Mail.ReadWrite
+  - Mail.Read
+  - Mail.Send
+  - MailboxSettings.ReadWrite
+  - Files.ReadWrite.All
+  - Files.Read.All
+  - Sites.FullControl.All
+  - Sites.ReadWrite.All
+  - Directory.ReadWrite.All
+  - RoleManagement.ReadWrite.Directory
+  - AppRoleAssignment.ReadWrite.All
+  - Application.ReadWrite.All
+  - User.ReadWrite.All
+  - full_access_as_app
+  - EWS.AccessAsUser.All
+
+# Authentication methods considered weak for MFA / SSPR (phishable or not strong enough).
+weak_auth_methods:
+  - sms
+  - voice
+  - securityQuestions
+  - email
+
+# ---------------------------------------------------------------- detections (part B)
+detections:
+  spray_window_minutes: 60      # DET-001: sliding window per source IP
+  spray_min_users: 10           # DET-001: distinct users with a failed password from one IP
+  mfa_window_minutes: 30        # DET-002: window to count MFA denials for one user
+  mfa_min_denials: 5            # DET-002: denials / timeouts in the window
+  mfa_success_within_minutes: 60  # DET-002: success after the last denial
+  travel_max_kmh: 900           # DET-004: faster than a commercial plane
+  travel_min_km: 500            # DET-004: ignore short hops (geo-IP is imprecise)
+  bec_window_hours: 24          # DET-005: unfamiliar sign-in -> external forwarding rule
+  usual_countries: [MA]         # DET-005: countries considered normal for the whole tenant
+  internal_domains:             # DET-005: forwarding to these domains is not "external"
+    - agrisouss.ma
+    - agrisouss.onmicrosoft.com
+
+# Client apps that use legacy (basic) authentication in Entra ID sign-in logs
+# (SigninLogs.ClientAppUsed). "Browser" and "Mobile Apps and Desktop clients" are modern.
+legacy_client_apps:
+  - Exchange ActiveSync
+  - IMAP4
+  - POP3
+  - Authenticated SMTP
+  - Exchange Web Services
+  - MAPI Over HTTP
+  - Offline Address Book
+  - Autodiscover
+  - Other clients

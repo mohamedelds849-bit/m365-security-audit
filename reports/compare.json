@@ -1,0 +1,100 @@
+{
+  "same_tenant": true,
+  "before": {
+    "source": "agrisouss_m365_vulnerable.json",
+    "global": 80,
+    "level": "critique"
+  },
+  "after": {
+    "source": "agrisouss_m365_hardened.json",
+    "global": 0,
+    "level": "faible"
+  },
+  "delta": -80,
+  "categories": {
+    "access": {
+      "before": 100,
+      "after": 0,
+      "delta": -100
+    },
+    "privileged": {
+      "before": 70,
+      "after": 0,
+      "delta": -70
+    },
+    "accounts": {
+      "before": 45,
+      "after": 0,
+      "delta": -45
+    },
+    "apps": {
+      "before": 50,
+      "after": 0,
+      "delta": -50
+    },
+    "collab": {
+      "before": 60,
+      "after": 0,
+      "delta": -60
+    },
+    "logging": {
+      "before": 30,
+      "after": 0,
+      "delta": -30
+    }
+  },
+  "fixed": [
+    "M365-ACC-001",
+    "M365-ACC-002",
+    "M365-ACC-003",
+    "M365-ACC-004",
+    "M365-ACC-005",
+    "M365-APP-001",
+    "M365-APP-002",
+    "M365-APP-003",
+    "M365-CA-001",
+    "M365-CA-002",
+    "M365-CA-003",
+    "M365-CA-004",
+    "M365-CA-005",
+    "M365-CA-006",
+    "M365-COL-001",
+    "M365-COL-002",
+    "M365-COL-003",
+    "M365-COL-004",
+    "M365-LOG-001",
+    "M365-LOG-002",
+    "M365-PRIV-001",
+    "M365-PRIV-002",
+    "M365-PRIV-003",
+    "M365-PRIV-004"
+  ],
+  "new": [],
+  "remaining": [],
+  "titles": {
+    "M365-ACC-001": "Accès invités trop permissif (droits d'un membre, invitations par tous)",
+    "M365-ACC-002": "Comptes actifs inutilisés (membres et invités)",
+    "M365-ACC-003": "Réinitialisation de mot de passe en libre-service (SSPR) avec une seule méthode ou des méthodes faibles",
+    "M365-ACC-004": "Expiration périodique des mots de passe activée (contraire aux recommandations NIST / Microsoft actuelles)",
+    "M365-ACC-005": "Utilisateurs sans méthode MFA enregistrée ou uniquement SMS / appel vocal",
+    "M365-APP-001": "Les utilisateurs peuvent consentir seuls à n'importe quelle application",
+    "M365-APP-002": "Applications tierces avec permissions à haut privilège non vérifiées ou consenties par un utilisateur",
+    "M365-APP-003": "Tous les utilisateurs peuvent enregistrer des applications",
+    "M365-CA-001": "Aucune protection de base : security defaults désactivés et aucune stratégie d'accès conditionnel active",
+    "M365-CA-002": "MFA non imposée à tous les utilisateurs",
+    "M365-CA-003": "MFA non imposée (ou non enregistrée) pour des comptes à rôle privilégié",
+    "M365-CA-004": "Authentification héritée (legacy) non bloquée",
+    "M365-CA-005": "Pas de stratégie basée sur le risque (connexion / utilisateur) alors que la licence P2 est présente",
+    "M365-CA-006": "Stratégies d'accès conditionnel affaiblies (exclusions larges, mode rapport seul)",
+    "M365-COL-001": "Transfert automatique vers l'extérieur autorisé",
+    "M365-COL-002": "Domaine personnalisé sans DKIM, DMARC appliqué ou SPF strict",
+    "M365-COL-003": "Teams : accès externe ouvert à tous les domaines ou aux comptes Teams personnels",
+    "M365-COL-004": "SharePoint / OneDrive : liens 'Tout le monde' (anonymes) sans limite suffisante",
+    "M365-LOG-001": "Journal d'audit unifié (Unified Audit Log) désactivé",
+    "M365-LOG-002": "Audit des boîtes aux lettres désactivé ou contourné",
+    "M365-PRIV-001": "Nombre d'administrateurs généraux (Global Administrator) hors de la plage recommandée",
+    "M365-PRIV-002": "Rôles privilégiés attribués de façon permanente (pas de PIM / juste-à-temps)",
+    "M365-PRIV-003": "Comptes administrateurs non dédiés (boîte mail, licences, synchronisés depuis l'AD local)",
+    "M365-PRIV-004": "Comptes d'accès d'urgence (break-glass) absents, incomplets ou non surveillés"
+  }
+}

@@ -1,0 +1,58 @@
+{
+  "tool": "m365-security-audit",
+  "version": "1.0.0",
+  "source": "agrisouss_m365_hardened.json",
+  "tenant": "agrisouss.onmicrosoft.com",
+  "tenantName": "AgriSouss SARL",
+  "exportedAt": "2026-09-30T08:00:00Z",
+  "licences": {
+    "entraIdP1": true,
+    "entraIdP2": true
+  },
+  "inventory": {
+    "users": 39,
+    "guests": 2,
+    "caPolicies": 5,
+    "roleAssignments": 7,
+    "applications": 3,
+    "domains": 3
+  },
+  "checks_run": 24,
+  "score": {
+    "global": 0,
+    "level": "faible",
+    "categories": {
+      "access": 0,
+      "privileged": 0,
+      "accounts": 0,
+      "apps": 0,
+      "collab": 0,
+      "logging": 0
+    },
+    "severity_counts": {
+      "critical": 0,
+      "high": 0,
+      "medium": 0,
+      "low": 0
+    },
+    "formula": "global = round(0.5*max(catégories) + 0.5*moyenne(catégories)); catégorie = min(100, Σ points); critical=40 high=20 medium=10 low=5"
+  },
+  "findings": [],
+  "plan": [
+    {
+      "bucket": "quick",
+      "label": "Quick wins (< 1 semaine)",
+      "actions": []
+    },
+    {
+      "bucket": "30d",
+      "label": "Sous 30 jours",
+      "actions": []
+    },
+    {
+      "bucket": "90d",
+      "label": "Sous 90 jours",
+      "actions": []
+    }
+  ]
+}

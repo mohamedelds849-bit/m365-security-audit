@@ -1,0 +1,10 @@
+__pycache__/
+*.pyc
+.pytest_cache/
+/out/
+# real tenant exports and logs must never be committed
+m365-export*.json
+*.local.json
+*.local.jsonl
+.venv/
+*.egg-info/

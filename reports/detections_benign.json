@@ -1,0 +1,28 @@
+{
+  "tool": "m365-security-audit detect",
+  "version": "1.0.0",
+  "sources": {
+    "signins": "signins_benign.jsonl",
+    "audit": "audit_benign.jsonl"
+  },
+  "events": {
+    "signins": 305,
+    "audit": 5
+  },
+  "rules_run": [
+    "DET-001",
+    "DET-002",
+    "DET-003",
+    "DET-004",
+    "DET-005",
+    "DET-006"
+  ],
+  "severity_counts": {
+    "critical": 0,
+    "high": 0,
+    "medium": 0,
+    "low": 0
+  },
+  "alerts": [],
+  "disclaimer": "Détections hors ligne sur journaux synthétiques ; seuils pédagogiques, à ajuster sur des données réelles (voir docs/DETECTIONS.md)."
+}

@@ -1,0 +1,23 @@
+<!DOCTYPE html><html lang="fr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta http-equiv="Content-Security-Policy" content="default-src 'none'; style-src 'unsafe-inline'"><title>Audit M365 - agrisouss.onmicrosoft.com</title><style>
+:root{--bg:#f6f7f9;--card:#fff;--ink:#1d2430;--mute:#5b6577;--line:#dde1e7;
+--crit:#9b1c1c;--high:#c2410c;--med:#a16207;--low:#2563eb;--ok:#15803d}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--ink);
+font:15px/1.5 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
+main{max-width:1000px;margin:0 auto;padding:24px 16px}
+h1{font-size:1.5rem;margin:0 0 4px}h2{font-size:1.15rem;margin:28px 0 10px}
+.mute{color:var(--mute)}.card{background:var(--card);border:1px solid var(--line);
+border-radius:8px;padding:16px;margin:10px 0;overflow-wrap:anywhere}
+.score{display:flex;gap:24px;align-items:center;flex-wrap:wrap}
+.big{font-size:3rem;font-weight:700;line-height:1}
+table{width:100%;border-collapse:collapse}td,th{padding:6px 8px;border-bottom:1px solid var(--line);
+text-align:left;vertical-align:top}th{font-size:.85rem;color:var(--mute);font-weight:600}
+.bar{height:10px;background:#e8ebef;border-radius:5px;overflow:hidden;min-width:120px}
+.bar span{display:block;height:100%;background:var(--high)}
+.sev{display:inline-block;padding:1px 8px;border-radius:10px;color:#fff;font-size:.8rem;font-weight:600}
+.critical{background:var(--crit)}.high{background:var(--high)}.medium{background:var(--med)}
+.low{background:var(--low)}.ok{color:var(--ok)}.neg{color:var(--ok)}.pos{color:var(--crit)}
+ul{margin:6px 0 6px 20px;padding:0}code{font-size:.9em}
+details summary{cursor:pointer;font-weight:600}
+@media print{details{display:block}details>*{display:block}}
+footer{margin-top:32px;font-size:.85rem;color:var(--mute)}
+</style></head><body><main><h1>Audit de configuration Microsoft 365 / Entra ID - agrisouss.onmicrosoft.com</h1><p class="mute">AgriSouss SARL - export du 2026-09-30T08:00:00Z - source <code>agrisouss_m365_hardened.json</code> - 24 contrôles exécutés - Entra ID P1 : oui, P2 : oui</p><div class="card score"><div><div class="big">0<span class="mute" style="font-size:1rem">/100</span></div><div>Risque <b>faible</b> (plus bas = meilleur)</div></div><table><tr><td>Accès conditionnel et MFA</td><td><div class="bar"><span style="width:0%"></span></div></td><td>0</td></tr><tr><td>Rôles à privilèges</td><td><div class="bar"><span style="width:0%"></span></div></td><td>0</td></tr><tr><td>Comptes, invités et mots de passe</td><td><div class="bar"><span style="width:0%"></span></div></td><td>0</td></tr><tr><td>Applications et consentement OAuth</td><td><div class="bar"><span style="width:0%"></span></div></td><td>0</td></tr><tr><td>Messagerie et collaboration</td><td><div class="bar"><span style="width:0%"></span></div></td><td>0</td></tr><tr><td>Journalisation et supervision</td><td><div class="bar"><span style="width:0%"></span></div></td><td>0</td></tr></table></div><p class="mute">Formule : global = round(0.5*max(catégories) + 0.5*moyenne(catégories)); catégorie = min(100, Σ points); critical=40 high=20 medium=10 low=5</p><h2>Plan de remédiation priorisé</h2><div class="card"><b>Quick wins (&lt; 1 semaine)</b><p class="ok">Aucune action.</p></div><div class="card"><b>Sous 30 jours</b><p class="ok">Aucune action.</p></div><div class="card"><b>Sous 90 jours</b><p class="ok">Aucune action.</p></div><h2>Constats (0)</h2><p class="ok">Aucun constat : tous les contrôles sont conformes.</p><footer>Généré par m365-security-audit 1.0.0. Analyse hors ligne d'un export ou de journaux ; aucune connexion au tenant. Données de démonstration synthétiques (AgriSouss SARL, entreprise fictive).</footer></main></body></html>

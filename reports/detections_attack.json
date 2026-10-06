@@ -1,0 +1,178 @@
+{
+  "tool": "m365-security-audit detect",
+  "version": "1.0.0",
+  "sources": {
+    "signins": "signins_attack.jsonl",
+    "audit": "audit_attack.jsonl"
+  },
+  "events": {
+    "signins": 330,
+    "audit": 7
+  },
+  "rules_run": [
+    "DET-001",
+    "DET-002",
+    "DET-003",
+    "DET-004",
+    "DET-005",
+    "DET-006"
+  ],
+  "severity_counts": {
+    "critical": 1,
+    "high": 4,
+    "medium": 1,
+    "low": 0
+  },
+  "alerts": [
+    {
+      "rule": "DET-004",
+      "title": "Voyage impossible : deux connexions réussies trop éloignées pour le temps écoulé",
+      "severity": "medium",
+      "time": "2026-09-23T10:30:00Z",
+      "user": "h.idrissi@agrisouss.ma",
+      "summary": "MA -> US en 90 min",
+      "evidence": [
+        "2026-09-23T09:00:00Z Agadir (MA, 198.51.100.10)",
+        "2026-09-23T10:30:00Z New York (US, 203.0.113.90)",
+        "5806 km en 90 min -> 3871 km/h (seuil 900 km/h)"
+      ],
+      "mitre": [
+        {
+          "id": "T1078.004",
+          "name": "Valid Accounts: Cloud Accounts"
+        }
+      ],
+      "kql": "det-004-impossible-travel",
+      "triage": "Vérifier d'abord les explications bénignes : VPN d'entreprise, relais iCloud / proxy mobile, géolocalisation IP imprécise. Sinon : révoquer les sessions et réinitialiser le mot de passe."
+    },
+    {
+      "rule": "DET-001",
+      "title": "Pulvérisation de mots de passe (password spray) depuis une seule IP",
+      "severity": "high",
+      "time": "2026-09-24T02:05:00Z",
+      "user": "14 comptes",
+      "summary": "Spray depuis 203.0.113.45",
+      "evidence": [
+        "IP 203.0.113.45 (NL) : 14 échecs sur 14 comptes distincts",
+        "fenêtre 2026-09-24T02:05:00Z -> 2026-09-24T02:31:00Z",
+        "clients : Other clients",
+        "CONNEXION RÉUSSIE ensuite depuis la même IP : b.mansouri@agrisouss.ma"
+      ],
+      "mitre": [
+        {
+          "id": "T1110.003",
+          "name": "Brute Force: Password Spraying"
+        },
+        {
+          "id": "T1078.004",
+          "name": "Valid Accounts: Cloud Accounts"
+        }
+      ],
+      "kql": "det-001-password-spray",
+      "triage": "Bloquer l'IP (emplacement nommé + accès conditionnel), vérifier si un des comptes visés a une connexion réussie depuis cette IP, réinitialiser ces mots de passe, confirmer que l'authentification héritée est bloquée."
+    },
+    {
+      "rule": "DET-003",
+      "title": "Connexion réussie avec un protocole d'authentification hérité",
+      "severity": "high",
+      "time": "2026-09-24T02:40:00Z",
+      "user": "b.mansouri@agrisouss.ma",
+      "summary": "Authentification héritée réussie (IMAP4)",
+      "evidence": [
+        "1 connexion(s) réussie(s) via 'IMAP4' depuis 203.0.113.45 (NL), première à 2026-09-24T02:40:00Z"
+      ],
+      "mitre": [
+        {
+          "id": "T1078.004",
+          "name": "Valid Accounts: Cloud Accounts"
+        },
+        {
+          "id": "T1110.003",
+          "name": "Brute Force: Password Spraying"
+        }
+      ],
+      "kql": "det-003-legacy-auth",
+      "triage": "Une connexion héritée réussie = mot de passe valide utilisé SANS MFA. Vérifier l'IP et le client ; si inattendu : réinitialiser le mot de passe, révoquer les sessions, bloquer l'authentification héritée (M365-CA-004)."
+    },
+    {
+      "rule": "DET-002",
+      "title": "Fatigue MFA : rafale de refus MFA puis connexion réussie",
+      "severity": "high",
+      "time": "2026-09-25T23:30:00Z",
+      "user": "g.bakkali@agrisouss.ma",
+      "summary": "Refus MFA répétés suivis d'une acceptation",
+      "evidence": [
+        "7 refus / expirations MFA (code 500121) entre 2026-09-25T23:30:00Z et 2026-09-25T23:48:00Z",
+        "IP : 203.0.113.77",
+        "connexion RÉUSSIE à 2026-09-25T23:52:00Z depuis 203.0.113.77 (NL)"
+      ],
+      "mitre": [
+        {
+          "id": "T1621",
+          "name": "Multi-Factor Authentication Request Generation"
+        },
+        {
+          "id": "T1078.004",
+          "name": "Valid Accounts: Cloud Accounts"
+        }
+      ],
+      "kql": "det-002-mfa-fatigue",
+      "triage": "Appeler l'utilisateur par un canal connu : a-t-il approuvé une demande qu'il n'a pas initiée ? Si oui : révoquer les sessions (Revoke-MgUserSignInSession), réinitialiser le mot de passe, vérifier les méthodes MFA ajoutées et les règles de boîte. Activer la correspondance de nombre (number matching)."
+    },
+    {
+      "rule": "DET-005",
+      "title": "Compromission de messagerie (BEC) : connexion depuis un pays inhabituel puis règle de transfert externe",
+      "severity": "critical",
+      "time": "2026-09-26T07:05:00Z",
+      "user": "f.bakkali@agrisouss.ma",
+      "summary": "Transfert externe créé après connexion inhabituelle",
+      "evidence": [
+        "2026-09-26T06:50:00Z connexion réussie depuis GB (London, 203.0.113.120) : pays jamais vu pour ce compte",
+        "2026-09-26T07:05:00Z New-InboxRule '.' -> transfert vers f.bakkali.compta@mail-externe.example",
+        "dissimulation : MarkAsRead=True, MoveToFolder=RSS Feeds, StopProcessingRules=True"
+      ],
+      "mitre": [
+        {
+          "id": "T1078.004",
+          "name": "Valid Accounts: Cloud Accounts"
+        },
+        {
+          "id": "T1114.003",
+          "name": "Email Collection: Email Forwarding Rule"
+        },
+        {
+          "id": "T1564.008",
+          "name": "Hide Artifacts: Email Hiding Rules"
+        }
+      ],
+      "kql": "det-005-bec-forwarding",
+      "triage": "Traiter comme un incident : désactiver la règle et le transfert, révoquer les sessions, réinitialiser le mot de passe, rechercher les e-mails envoyés / lus (MailItemsAccessed), prévenir la comptabilité et les clients d'un risque de fraude au virement (playbook BEC)."
+    },
+    {
+      "rule": "DET-006",
+      "title": "Consentement à une application OAuth avec des permissions à haut privilège",
+      "severity": "high",
+      "time": "2026-09-26T07:20:00Z",
+      "user": "f.bakkali@agrisouss.ma",
+      "summary": "Consentement OAuth à haut privilège",
+      "evidence": [
+        "application 'PDF Convert Express' (11111111-2222-4333-8444-555555555501)",
+        "permissions à haut privilège : Files.ReadWrite.All, Mail.ReadWrite",
+        "type de consentement : Principal (utilisateur), IP 203.0.113.120"
+      ],
+      "mitre": [
+        {
+          "id": "T1528",
+          "name": "Steal Application Access Token"
+        },
+        {
+          "id": "T1550.001",
+          "name": "Use Alternate Authentication Material: Application Access Token"
+        }
+      ],
+      "kql": "det-006-oauth-consent",
+      "triage": "Identifier l'application (éditeur, appId, URL de redirection). Si non légitime : supprimer le consentement et le principal de service, révoquer les sessions de l'utilisateur, rechercher l'activité de l'app dans les journaux, restreindre le consentement utilisateur (M365-APP-001)."
+    }
+  ],
+  "disclaimer": "Détections hors ligne sur journaux synthétiques ; seuils pédagogiques, à ajuster sur des données réelles (voir docs/DETECTIONS.md)."
+}

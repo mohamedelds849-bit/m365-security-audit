@@ -1,0 +1,437 @@
+{
+  "tool": "m365-security-audit",
+  "version": "1.0.0",
+  "source": "agrisouss_m365_quickwins.json",
+  "tenant": "agrisouss.onmicrosoft.com",
+  "tenantName": "AgriSouss SARL",
+  "exportedAt": "2026-09-30T08:00:00Z",
+  "licences": {
+    "entraIdP1": true,
+    "entraIdP2": true
+  },
+  "inventory": {
+    "users": 34,
+    "guests": 2,
+    "caPolicies": 3,
+    "roleAssignments": 7,
+    "applications": 4,
+    "domains": 3
+  },
+  "checks_run": 24,
+  "score": {
+    "global": 48,
+    "level": "modéré",
+    "categories": {
+      "access": 40,
+      "privileged": 70,
+      "accounts": 10,
+      "apps": 20,
+      "collab": 20,
+      "logging": 0
+    },
+    "severity_counts": {
+      "critical": 0,
+      "high": 6,
+      "medium": 4,
+      "low": 0
+    },
+    "formula": "global = round(0.5*max(catégories) + 0.5*moyenne(catégories)); catégorie = min(100, Σ points); critical=40 high=20 medium=10 low=5"
+  },
+  "findings": [
+    {
+      "id": "M365-APP-002",
+      "title": "Applications tierces avec permissions à haut privilège non vérifiées ou consenties par un utilisateur",
+      "severity": "high",
+      "category": "apps",
+      "effort": "30d",
+      "affected": 2,
+      "evidence": [
+        "'PDF Convert Express' (11111111-2222-4333-8444-555555555501) : Files.ReadWrite.All, Mail.ReadWrite — éditeur non vérifié, consenti par un utilisateur (f.bakkali@agrisouss.ma)",
+        "'SyncCRM Connector' (11111111-2222-4333-8444-555555555502) : Directory.ReadWrite.All — éditeur non vérifié"
+      ],
+      "why": "Une application avec Mail.ReadWrite ou Directory.ReadWrite.All est un compte de service invisible : elle lit ou modifie les données sans connexion interactive, sans MFA, souvent sans que personne ne se souvienne de l'avoir autorisée.",
+      "remediation": "Pour chaque application listée : identifier le propriétaire métier, vérifier l'éditeur, retirer les permissions non nécessaires ou supprimer le consentement (Entra > Applications d'entreprise > Autorisations). Préférer des permissions limitées (ex. Mail.Read sur une boîte via RBAC for Applications).",
+      "references": [
+        "Microsoft Learn — Investigate and remediate risky OAuth apps / Review permissions granted to enterprise applications",
+        "Microsoft Learn — Detect and remediate illicit consent grants",
+        "SCuBA MS.AAD.5.2v1 — User consent to applications SHALL be restricted"
+      ],
+      "mitre": [
+        {
+          "id": "T1528",
+          "name": "Steal Application Access Token"
+        },
+        {
+          "id": "T1550.001",
+          "name": "Use Alternate Authentication Material: Application Access Token"
+        }
+      ],
+      "license_note": ""
+    },
+    {
+      "id": "M365-CA-002",
+      "title": "MFA non imposée à tous les utilisateurs",
+      "severity": "high",
+      "category": "access",
+      "effort": "30d",
+      "affected": 2,
+      "evidence": [
+        "aucune stratégie active 'Tous les utilisateurs + toutes les applications + MFA'",
+        "stratégies MFA partielles (périmètre réduit) : CA01 - MFA pour les rôles d'administration"
+      ],
+      "why": "Microsoft estime que la MFA bloque l'immense majorité des attaques automatisées sur les comptes. Sans MFA imposée à tous, un mot de passe hameçonné ou réutilisé ailleurs donne directement accès à la boîte mail et aux fichiers.",
+      "remediation": "Créer une stratégie d'accès conditionnel 'Tous les utilisateurs / Toutes les ressources / Exiger l'authentification multifacteur' en excluant uniquement les comptes de secours (break-glass). Viser ensuite une MFA résistante à l'hameçonnage (FIDO2, Windows Hello, passkeys).",
+      "references": [
+        "CIS M365 Foundations — 'Ensure multifactor authentication is enabled for all users'",
+        "SCuBA MS.AAD.3.2v2 — MFA SHALL be enforced for all users",
+        "SCuBA MS.AAD.3.1v1 — Phishing-resistant MFA SHALL be enforced for all users"
+      ],
+      "mitre": [
+        {
+          "id": "T1078.004",
+          "name": "Valid Accounts: Cloud Accounts"
+        },
+        {
+          "id": "T1110.003",
+          "name": "Brute Force: Password Spraying"
+        }
+      ],
+      "license_note": "Accès conditionnel : Entra ID P1 (sinon : security defaults)."
+    },
+    {
+      "id": "M365-COL-002",
+      "title": "Domaine personnalisé sans DKIM, DMARC appliqué ou SPF strict",
+      "severity": "high",
+      "category": "collab",
+      "effort": "30d",
+      "affected": 6,
+      "evidence": [
+        "agrisouss-export.com : aucun enregistrement SPF",
+        "agrisouss-export.com : signature DKIM désactivée",
+        "agrisouss-export.com : aucun enregistrement DMARC",
+        "agrisouss.ma : SPF non strict (v=spf1 include:spf.protection.outlook.com ?all)",
+        "agrisouss.ma : signature DKIM désactivée",
+        "agrisouss.ma : DMARC p=none (surveillance seulement)"
+      ],
+      "why": "Sans SPF, DKIM et DMARC en mode quarantine/reject, n'importe qui peut envoyer un e-mail qui semble venir de @agrisouss.ma : faux ordre de virement au comptable, fausse facture au client. DMARC 'p=none' observe mais ne protège pas.",
+      "remediation": "Publier un SPF qui se termine par -all (ou ~all transitoire), activer la signature DKIM dans Defender (2 CNAME selector1/selector2), publier DMARC p=none avec rapports, analyser 2-4 semaines, puis passer en quarantine puis reject.",
+      "references": [
+        "CIS M365 Foundations — 'Ensure DKIM is enabled for all Exchange Online Domains'",
+        "CIS M365 Foundations — 'Ensure DMARC Records for all Exchange Online domains are published'",
+        "CIS M365 Foundations — 'Ensure SPF records are published for all Exchange Domains'",
+        "SCuBA MS.EXO.2.2v3 (SPF), MS.EXO.3.1v1 (DKIM), MS.EXO.4.1v1 / MS.EXO.4.2v1 (DMARC p=reject)"
+      ],
+      "mitre": [
+        {
+          "id": "T1566",
+          "name": "Phishing"
+        },
+        {
+          "id": "T1534",
+          "name": "Internal Spearphishing"
+        }
+      ],
+      "license_note": ""
+    },
+    {
+      "id": "M365-PRIV-001",
+      "title": "Nombre d'administrateurs généraux (Global Administrator) hors de la plage recommandée",
+      "severity": "high",
+      "category": "privileged",
+      "effort": "30d",
+      "affected": 1,
+      "evidence": [
+        "6 Global Administrator(s) actif(s) ou éligible(s) (attendu 2-4) : bg.secours1@agrisouss.onmicrosoft.com, f.bakkali@agrisouss.ma, h.alaoui@agrisouss.ma, k.idrissi@agrisouss.ma, s.mansouri@agrisouss.ma, y.benali@agrisouss.ma"
+      ],
+      "why": "Global Administrator peut tout faire dans le tenant. Trop de titulaires multiplie les comptes dont la compromission est fatale ; un seul titulaire crée un risque de blocage total s'il est perdu (départ, MFA perdue).",
+      "remediation": "Garder 2 à 4 Global Administrators (dont les comptes de secours). Donner aux autres des rôles plus fins : Exchange Administrator, User Administrator, Helpdesk Administrator...",
+      "references": [
+        "CIS M365 Foundations — 'Ensure that between two and four global admins are designated'",
+        "SCuBA MS.AAD.7.1v1 — between two and eight Global Administrators (SCuBA est plus permissif que CIS)",
+        "SCuBA MS.AAD.7.2v1 — finer-grained roles instead of Global Administrator"
+      ],
+      "mitre": [
+        {
+          "id": "T1078.004",
+          "name": "Valid Accounts: Cloud Accounts"
+        },
+        {
+          "id": "T1098.003",
+          "name": "Account Manipulation: Additional Cloud Roles"
+        }
+      ],
+      "license_note": ""
+    },
+    {
+      "id": "M365-PRIV-002",
+      "title": "Rôles privilégiés attribués de façon permanente (pas de PIM / juste-à-temps)",
+      "severity": "high",
+      "category": "privileged",
+      "effort": "90d",
+      "affected": 6,
+      "evidence": [
+        "y.benali@agrisouss.ma : 'Exchange Administrator' actif sans date de fin",
+        "f.bakkali@agrisouss.ma : 'Global Administrator' actif sans date de fin",
+        "h.alaoui@agrisouss.ma : 'Global Administrator' actif sans date de fin",
+        "k.idrissi@agrisouss.ma : 'Global Administrator' actif sans date de fin",
+        "s.mansouri@agrisouss.ma : 'Global Administrator' actif sans date de fin",
+        "y.benali@agrisouss.ma : 'Global Administrator' actif sans date de fin"
+      ],
+      "why": "Une attribution 'active permanente' signifie que le compte est administrateur 24 h/24, même quand personne n'administre. Avec Privileged Identity Management (PIM), le rôle est 'éligible' et activé pour quelques heures, avec justification et MFA : la fenêtre d'exposition chute fortement.",
+      "remediation": "Convertir les attributions actives permanentes en attributions éligibles PIM (activation limitée dans le temps, MFA, approbation pour Global Administrator). Seuls les comptes de secours restent actifs en permanence.",
+      "references": [
+        "CIS M365 Foundations — 'Ensure Privileged Identity Management is used to manage roles'",
+        "SCuBA MS.AAD.7.4v1 — Permanent active role assignments SHALL NOT be allowed for highly privileged roles",
+        "SCuBA MS.AAD.7.6v1 — Activation of the Global Administrator role SHALL require approval"
+      ],
+      "mitre": [
+        {
+          "id": "T1078.004",
+          "name": "Valid Accounts: Cloud Accounts"
+        }
+      ],
+      "license_note": "PIM nécessite Entra ID P2 (ou Entra ID Governance)."
+    },
+    {
+      "id": "M365-PRIV-004",
+      "title": "Comptes d'accès d'urgence (break-glass) absents, incomplets ou non surveillés",
+      "severity": "high",
+      "category": "privileged",
+      "effort": "30d",
+      "affected": 2,
+      "evidence": [
+        "1 compte(s) break-glass actif(s) déclaré(s) (attendu : 2)",
+        "aucune alerte configurée sur les connexions des comptes break-glass"
+      ],
+      "why": "Si la MFA tombe en panne ou si un administrateur se bloque avec une stratégie d'accès conditionnel, seuls des comptes de secours permettent de reprendre la main. Comme ils sont exclus de certaines protections, toute connexion avec eux doit déclencher une alerte.",
+      "remediation": "Créer 2 comptes cloud-only (domaine .onmicrosoft.com) Global Administrator permanents, avec une méthode résistante à l'hameçonnage (clé FIDO2) gardée au coffre, exclus uniquement des stratégies qui pourraient bloquer l'accès, et une alerte (Azure Monitor / Sentinel) sur chacune de leurs connexions.",
+      "references": [
+        "Microsoft Learn — Manage emergency access accounts in Microsoft Entra ID",
+        "CIS M365 Foundations — 'Ensure two emergency access accounts have been defined'"
+      ],
+      "mitre": [
+        {
+          "id": "T1078.004",
+          "name": "Valid Accounts: Cloud Accounts"
+        }
+      ],
+      "license_note": ""
+    },
+    {
+      "id": "M365-ACC-005",
+      "title": "Utilisateurs sans méthode MFA enregistrée ou uniquement SMS / appel vocal",
+      "severity": "medium",
+      "category": "accounts",
+      "effort": "30d",
+      "affected": 15,
+      "evidence": [
+        "a.benali@agrisouss.ma : uniquement sms",
+        "a.berrada@agrisouss.ma : uniquement sms",
+        "b.bouzid@agrisouss.ma : uniquement voice",
+        "b.mansouri@agrisouss.ma : uniquement sms",
+        "g.bakkali@agrisouss.ma : aucune méthode MFA enregistrée",
+        "h.moussaoui@agrisouss.ma : uniquement sms",
+        "m.haddad@agrisouss.ma : uniquement voice",
+        "n.bouzid@agrisouss.ma : aucune méthode MFA enregistrée",
+        "o.benali@agrisouss.ma : uniquement sms",
+        "o.naciri@agrisouss.ma : uniquement sms",
+        "r.benali@agrisouss.ma : uniquement sms",
+        "s.belkadi@agrisouss.ma : aucune méthode MFA enregistrée",
+        "scanner@agrisouss.ma : aucune méthode MFA enregistrée",
+        "y.bakkali@agrisouss.ma : uniquement voice",
+        "y.belkadi@agrisouss.ma : uniquement voice"
+      ],
+      "why": "Une stratégie MFA ne sert à rien tant que l'utilisateur n'a rien enregistré : le premier qui saisit son mot de passe peut enregistrer SA méthode. Le SMS et l'appel sont mieux que rien mais vulnérables au SIM swapping et au relais d'hameçonnage.",
+      "remediation": "Lancer une campagne d'enregistrement (registration campaign) vers Microsoft Authenticator avec correspondance de nombre, puis vers des méthodes résistantes à l'hameçonnage ; restreindre l'enregistrement aux emplacements de confiance.",
+      "references": [
+        "SCuBA MS.AAD.3.5v2 — SMS, Voice Call and Email OTP SHALL be disabled",
+        "Microsoft Learn — Authentication methods activity / User registration details report",
+        "Microsoft Learn — How to run a registration campaign to set up Microsoft Authenticator"
+      ],
+      "mitre": [
+        {
+          "id": "T1078.004",
+          "name": "Valid Accounts: Cloud Accounts"
+        },
+        {
+          "id": "T1621",
+          "name": "Multi-Factor Authentication Request Generation"
+        }
+      ],
+      "license_note": ""
+    },
+    {
+      "id": "M365-CA-005",
+      "title": "Pas de stratégie basée sur le risque (connexion / utilisateur) alors que la licence P2 est présente",
+      "severity": "medium",
+      "category": "access",
+      "effort": "30d",
+      "affected": 2,
+      "evidence": [
+        "aucune stratégie active sur le risque de connexion (signInRiskLevels)",
+        "aucune stratégie active sur le risque utilisateur (userRiskLevels)"
+      ],
+      "why": "Entra ID Protection calcule un niveau de risque (identifiants divulgués, IP anonyme, voyage atypique...). Sans stratégie qui exige la MFA ou bloque quand le risque est élevé, ces signaux restent de simples lignes dans un rapport que personne ne lit.",
+      "remediation": "Créer deux stratégies d'accès conditionnel : risque de connexion élevé -> bloquer ou exiger la MFA ; risque utilisateur élevé -> bloquer ou exiger un changement de mot de passe sécurisé. Tester d'abord en mode rapport seul.",
+      "references": [
+        "SCuBA MS.AAD.2.3v1 — Sign-ins detected as high risk SHALL be blocked",
+        "SCuBA MS.AAD.2.1v1 — Users detected as high risk SHALL be blocked",
+        "CIS M365 Foundations — Identity Protection sign-in risk / user risk policy recommendations (titres variables selon la version)",
+        "Microsoft Learn — Risk-based access policies (Microsoft Entra ID Protection)"
+      ],
+      "mitre": [
+        {
+          "id": "T1078.004",
+          "name": "Valid Accounts: Cloud Accounts"
+        }
+      ],
+      "license_note": "Nécessite Entra ID P2 : contrôle évalué uniquement si tenant.entraIdP2 = true (sinon ce n'est pas une mauvaise configuration mais une limite de licence)."
+    },
+    {
+      "id": "M365-CA-006",
+      "title": "Stratégies d'accès conditionnel affaiblies (exclusions larges, mode rapport seul)",
+      "severity": "medium",
+      "category": "access",
+      "effort": "30d",
+      "affected": 1,
+      "evidence": [
+        "'CA10 - MFA tous les utilisateurs (test)' est en mode rapport seul : elle n'applique rien"
+      ],
+      "why": "Une stratégie MFA qui exclut 'temporairement' des comptes, ou qui reste en mode rapport seul, donne une fausse impression de sécurité : les comptes exclus sont exactement ceux que l'attaquant visera.",
+      "remediation": "Limiter les exclusions aux comptes de secours (break-glass) surveillés ; remplacer les autres exclusions par un groupe revu chaque mois avec une date de fin ; passer les stratégies validées du mode rapport seul au mode activé.",
+      "references": [
+        "Microsoft Learn — Plan a Conditional Access deployment (exclusions, report-only mode)",
+        "Microsoft Learn — Manage emergency access accounts in Microsoft Entra ID"
+      ],
+      "mitre": [
+        {
+          "id": "T1078.004",
+          "name": "Valid Accounts: Cloud Accounts"
+        }
+      ],
+      "license_note": "Accès conditionnel : Entra ID P1."
+    },
+    {
+      "id": "M365-PRIV-003",
+      "title": "Comptes administrateurs non dédiés (boîte mail, licences, synchronisés depuis l'AD local)",
+      "severity": "medium",
+      "category": "privileged",
+      "effort": "30d",
+      "affected": 5,
+      "evidence": [
+        "f.bakkali@agrisouss.ma (Global Administrator) : boîte mail ; licences O365_BUSINESS_PREMIUM ; synchronisé depuis l'AD local",
+        "h.alaoui@agrisouss.ma (Global Administrator) : boîte mail ; licences O365_BUSINESS_PREMIUM ; synchronisé depuis l'AD local",
+        "k.idrissi@agrisouss.ma (Global Administrator) : boîte mail ; licences O365_BUSINESS_PREMIUM ; synchronisé depuis l'AD local",
+        "s.mansouri@agrisouss.ma (Global Administrator) : boîte mail ; licences O365_BUSINESS_PREMIUM",
+        "y.benali@agrisouss.ma (Exchange Administrator, Global Administrator) : boîte mail ; licences O365_BUSINESS_PREMIUM ; synchronisé depuis l'AD local"
+      ],
+      "why": "Un compte admin qui lit ses e-mails et navigue sur le web est exposé à l'hameçonnage. Un compte admin synchronisé depuis l'AD local permet à une compromission de l'AD de se propager au cloud.",
+      "remediation": "Créer pour chaque administrateur un compte cloud-only séparé (ex. adm.prenom@tenant.onmicrosoft.com), sans boîte mail ni licence bureautique, utilisé uniquement pour l'administration.",
+      "references": [
+        "CIS M365 Foundations — 'Ensure Administrative accounts are cloud-only'",
+        "CIS M365 Foundations — 'Ensure administrative accounts use licenses with a reduced application footprint'",
+        "SCuBA MS.AAD.7.3v1 — Privileged users SHALL be provisioned cloud-only accounts"
+      ],
+      "mitre": [
+        {
+          "id": "T1078.004",
+          "name": "Valid Accounts: Cloud Accounts"
+        },
+        {
+          "id": "T1566",
+          "name": "Phishing"
+        }
+      ],
+      "license_note": ""
+    }
+  ],
+  "plan": [
+    {
+      "bucket": "quick",
+      "label": "Quick wins (< 1 semaine)",
+      "actions": []
+    },
+    {
+      "bucket": "30d",
+      "label": "Sous 30 jours",
+      "actions": [
+        {
+          "id": "M365-APP-002",
+          "severity": "high",
+          "title": "Applications tierces avec permissions à haut privilège non vérifiées ou consenties par un utilisateur",
+          "action": "Pour chaque application listée : identifier le propriétaire métier, vérifier l'éditeur, retirer les permissions non nécessaires ou supprimer le consentement (Entra > Applications d'entreprise > Autorisations). Préférer des permissions limitées (ex. Mail.Read sur une boîte via RBAC for Applications).",
+          "affected": 2
+        },
+        {
+          "id": "M365-CA-002",
+          "severity": "high",
+          "title": "MFA non imposée à tous les utilisateurs",
+          "action": "Créer une stratégie d'accès conditionnel 'Tous les utilisateurs / Toutes les ressources / Exiger l'authentification multifacteur' en excluant uniquement les comptes de secours (break-glass). Viser ensuite une MFA résistante à l'hameçonnage (FIDO2, Windows Hello, passkeys).",
+          "affected": 2
+        },
+        {
+          "id": "M365-COL-002",
+          "severity": "high",
+          "title": "Domaine personnalisé sans DKIM, DMARC appliqué ou SPF strict",
+          "action": "Publier un SPF qui se termine par -all (ou ~all transitoire), activer la signature DKIM dans Defender (2 CNAME selector1/selector2), publier DMARC p=none avec rapports, analyser 2-4 semaines, puis passer en quarantine puis reject.",
+          "affected": 6
+        },
+        {
+          "id": "M365-PRIV-001",
+          "severity": "high",
+          "title": "Nombre d'administrateurs généraux (Global Administrator) hors de la plage recommandée",
+          "action": "Garder 2 à 4 Global Administrators (dont les comptes de secours). Donner aux autres des rôles plus fins : Exchange Administrator, User Administrator, Helpdesk Administrator...",
+          "affected": 1
+        },
+        {
+          "id": "M365-PRIV-004",
+          "severity": "high",
+          "title": "Comptes d'accès d'urgence (break-glass) absents, incomplets ou non surveillés",
+          "action": "Créer 2 comptes cloud-only (domaine .onmicrosoft.com) Global Administrator permanents, avec une méthode résistante à l'hameçonnage (clé FIDO2) gardée au coffre, exclus uniquement des stratégies qui pourraient bloquer l'accès, et une alerte (Azure Monitor / Sentinel) sur chacune de leurs connexions.",
+          "affected": 2
+        },
+        {
+          "id": "M365-ACC-005",
+          "severity": "medium",
+          "title": "Utilisateurs sans méthode MFA enregistrée ou uniquement SMS / appel vocal",
+          "action": "Lancer une campagne d'enregistrement (registration campaign) vers Microsoft Authenticator avec correspondance de nombre, puis vers des méthodes résistantes à l'hameçonnage ; restreindre l'enregistrement aux emplacements de confiance.",
+          "affected": 15
+        },
+        {
+          "id": "M365-CA-005",
+          "severity": "medium",
+          "title": "Pas de stratégie basée sur le risque (connexion / utilisateur) alors que la licence P2 est présente",
+          "action": "Créer deux stratégies d'accès conditionnel : risque de connexion élevé -> bloquer ou exiger la MFA ; risque utilisateur élevé -> bloquer ou exiger un changement de mot de passe sécurisé. Tester d'abord en mode rapport seul.",
+          "affected": 2
+        },
+        {
+          "id": "M365-CA-006",
+          "severity": "medium",
+          "title": "Stratégies d'accès conditionnel affaiblies (exclusions larges, mode rapport seul)",
+          "action": "Limiter les exclusions aux comptes de secours (break-glass) surveillés ; remplacer les autres exclusions par un groupe revu chaque mois avec une date de fin ; passer les stratégies validées du mode rapport seul au mode activé.",
+          "affected": 1
+        },
+        {
+          "id": "M365-PRIV-003",
+          "severity": "medium",
+          "title": "Comptes administrateurs non dédiés (boîte mail, licences, synchronisés depuis l'AD local)",
+          "action": "Créer pour chaque administrateur un compte cloud-only séparé (ex. adm.prenom@tenant.onmicrosoft.com), sans boîte mail ni licence bureautique, utilisé uniquement pour l'administration.",
+          "affected": 5
+        }
+      ]
+    },
+    {
+      "bucket": "90d",
+      "label": "Sous 90 jours",
+      "actions": [
+        {
+          "id": "M365-PRIV-002",
+          "severity": "high",
+          "title": "Rôles privilégiés attribués de façon permanente (pas de PIM / juste-à-temps)",
+          "action": "Convertir les attributions actives permanentes en attributions éligibles PIM (activation limitée dans le temps, MFA, approbation pour Global Administrator). Seuls les comptes de secours restent actifs en permanence.",
+          "affected": 6
+        }
+      ]
+    }
+  ]
+}
