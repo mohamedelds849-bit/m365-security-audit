@@ -82,7 +82,8 @@ SigninLogs
 // DET-003 - successful sign-in with a legacy (basic auth) client
 let legacy = dynamic(["Exchange ActiveSync", "IMAP4", "POP3", "Authenticated SMTP",
     "Exchange Web Services", "MAPI Over HTTP", "Offline Address Book", "Autodiscover",
-    "Other clients"]);
+    "Outlook Anywhere (RPC over HTTP)", "Exchange Online PowerShell", "Reporting Web Services",
+    "Outlook Service", "Other clients"]);
 SigninLogs
 | where TimeGenerated > ago(7d)
 | where ResultType == "0" and ClientAppUsed in (legacy)

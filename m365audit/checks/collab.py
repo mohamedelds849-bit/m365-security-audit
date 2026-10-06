@@ -53,7 +53,10 @@ class EmailAuthentication(Check):
         "CIS M365 Foundations — 'Ensure SPF records are published for all Exchange Domains'",
         "SCuBA MS.EXO.2.2v3 (SPF), MS.EXO.3.1v1 (DKIM), MS.EXO.4.1v1 / MS.EXO.4.2v1 (DMARC p=reject)",
     ]
-    mitre = [("T1566", "Phishing"), ("T1534", "Internal Spearphishing")]
+    # T1684.002 = ATT&CK v19 ID of the former T1672 "Email Spoofing" (checked 2026-10-06).
+    # T1534 Internal Spearphishing is NOT used here: it needs a compromised internal mailbox,
+    # which SPF/DKIM/DMARC do not prevent.
+    mitre = [("T1566", "Phishing"), ("T1684.002", "Social Engineering: Email Spoofing")]
 
     def evaluate(self, t, cfg):
         ev = []

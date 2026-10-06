@@ -119,9 +119,10 @@ ATT&CK IDs checked on attack.mitre.org on 2026-10-05 / 2026-10-06 (v19.x).
 | DET-006 | high | Consent to an app with high-privilege permissions | T1528, T1550.001 | `AuditLogs` |
 
 The configuration checks map to T1078.004, T1110.001/.003, T1098.001/.003, T1528,
-T1550.001, T1621, T1114.003, T1566 / .003, T1534, T1199, T1087.004, T1530, T1213.002 and
-T1685.002 (*Disable or Modify Tools: Disable or Modify Cloud Log*, the v19 ID for what was
-T1562.008). They describe what the weakness makes easier, never how to exploit it.
+T1550.001, T1621, T1114.003, T1566 / .003, T1684.002, T1199, T1087.004, T1530, T1213.002 and
+T1685.002. Two v19 renumberings: T1685.002 (*Disable or Modify Tools: Disable or Modify
+Cloud Log*) is the former T1562.008, and T1684.002 (*Social Engineering: Email Spoofing*,
+used for SPF/DKIM/DMARC) is the former T1672. They describe what the weakness makes easier, never how to exploit it.
 
 ## Results (synthetic data, 2026-10-06)
 
@@ -133,9 +134,10 @@ T1562.008). They describe what the weakness makes easier, never how to exploit i
 | `signins_benign` + `audit_benign` (305 + 5 events, 8 near-misses) | **0 alerts** |
 | `signins_attack` + `audit_attack` (330 + 7 events) | **6 alerts**: 1 critical, 4 high, 1 medium (one per rule) |
 
-Tests: **136 passing** (`python -m pytest`): every check fires on the vulnerable export and
+Tests: **148 passing** (`python -m pytest`): every check fires on the vulnerable export and
 is silent on the hardened one, single-mutation tests, threshold boundaries, licence logic,
-detection thresholds and near-misses, scores, secret refusal, CLI exit codes.
+detection thresholds and near-misses, scores, secret refusal, CLI exit codes, HTML escaping, and a static check that the export
+script calls no tenant-modifying cmdlet.
 
 ## Limitations (read before trusting a result)
 

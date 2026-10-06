@@ -40,7 +40,9 @@ class MailboxAuditingOff(Check):
     effort = "quick"
     why = ("L'audit des boîtes enregistre les accès (MailItemsAccessed, Send, règles...). C'est "
            "la seule façon de dire quels e-mails ont été lus lors d'une compromission (BEC). "
-           "Une boîte en 'AuditBypass' est invisible.")
+           "Il est activé par défaut depuis 2019 (« mailbox auditing on by default ») : "
+           "AuditDisabled = True ou une boîte en 'AuditBypass' (invisible) est donc un choix "
+           "délibéré, à justifier ou à annuler.")
     remediation = ("Remettre AuditDisabled = False au niveau de l'organisation "
                    "(Set-OrganizationConfig) et retirer le contournement "
                    "(Set-MailboxAuditBypassAssociation -AuditBypassEnabled $false) ; vérifier les "

@@ -83,4 +83,10 @@ legacy_client_apps:
   - MAPI Over HTTP
   - Offline Address Book
   - Autodiscover
+  - Outlook Anywhere (RPC over HTTP)
+  - Exchange Online PowerShell
+  - Reporting Web Services
+  - Outlook Service
   - Other clients
+# Names follow the "Other clients" list of Microsoft Learn (Conditional Access: Conditions >
+# Client apps); check the exact ClientAppUsed strings in your own sign-in logs.

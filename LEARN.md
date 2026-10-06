@@ -179,13 +179,17 @@ détections sur des journaux JSONL et propose la requête KQL équivalente pour 
     vérifié syntaxiquement, pas testé en réel.
 
 16. **Pourquoi déconseiller l'expiration des mots de passe ?**
-    NIST SP 800-63B et Microsoft : les changements forcés produisent des mots de passe
-    prévisibles. Mais seulement si la MFA est imposée et les mots de passe interdits filtrés.
+    Les changements forcés produisent des mots de passe prévisibles. NIST SP 800-63B
+    (rév. 4, 2025) va jusqu'à l'interdire (« SHALL NOT »), mais exige en échange une liste
+    de mots de passe interdits / divulgués et un changement forcé en cas de preuve de
+    fuite. Microsoft fait la même recommandation, avec la MFA imposée. Je ne passe donc à
+    « jamais » qu'après la MFA et la protection par mot de passe.
 
 17. **Comment as-tu testé l'outil ?**
-    136 tests : chaque contrôle se déclenche sur l'export vulnérable et reste muet sur
+    148 tests : chaque contrôle se déclenche sur l'export vulnérable et reste muet sur
     l'export durci, une seule modification d'un export propre déclenche le bon contrôle,
-    limites de chaque seuil, détections avec quasi-incidents, scores, refus des secrets.
+    limites de chaque seuil, détections avec quasi-incidents, scores, refus des secrets, échappement HTML, et un test qui vérifie que le script
+    d'export n'appelle aucune cmdlet de modification.
 
 18. **As-tu fait ce projet seul et l'as-tu lancé sur une vraie entreprise ?**
     Je l'ai construit avec l'aide de l'IA, sur des données synthétiques d'une PME fictive.
@@ -198,7 +202,7 @@ détections sur des journaux JSONL et propose la requête KQL équivalente pour 
 > Développement d'un outil Python d'audit hors ligne de la configuration Microsoft 365 /
 > Entra ID (24 contrôles inspirés du CIS et de CISA SCuBA, score de risque, plan de
 > remédiation) et de 6 détections sur journaux de connexion et d'audit mappées MITRE ATT&CK
-> avec requêtes KQL, validé sur des **données synthétiques** (136 tests).
+> avec requêtes KQL, validé sur des **données synthétiques** (148 tests).
 
 ## 7. À ne jamais dire
 

@@ -127,8 +127,8 @@
           "name": "Phishing"
         },
         {
-          "id": "T1534",
-          "name": "Internal Spearphishing"
+          "id": "T1684.002",
+          "name": "Social Engineering: Email Spoofing"
         }
       ],
       "license_note": ""

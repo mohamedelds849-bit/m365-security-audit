@@ -109,17 +109,18 @@ class PasswordExpiration(Check):
     severity = "low"
     category = "accounts"
     effort = "quick"
-    why = ("NIST SP 800-63B et Microsoft déconseillent les changements forcés périodiques : les "
-           "utilisateurs choisissent alors des variantes prévisibles (Agadir2026! -> Agadir2027!). "
-           "Nuance : cela ne vaut QUE si la MFA est imposée, que les mots de passe interdits / "
-           "divulgués sont filtrés, et qu'on force le changement en cas de suspicion de fuite. "
+    why = ("NIST SP 800-63B (rév. 4, 2025 : « SHALL NOT ») interdit d'imposer des changements "
+           "périodiques, et Microsoft les déconseille : les utilisateurs choisissent alors des "
+           "variantes prévisibles (Agadir2026! -> Agadir2027!). NIST impose en contrepartie de "
+           "filtrer les mots de passe interdits / divulgués et de forcer le changement en cas de "
+           "preuve de compromission ; Microsoft associe la recommandation à la MFA imposée. "
            "Une politique d'entreprise ou un audit de conformité peut encore exiger l'expiration.")
     remediation = ("Passer la stratégie d'expiration à 'jamais' APRÈS avoir imposé la MFA et "
                    "activé la protection par mot de passe Entra (liste globale + liste "
                    "personnalisée : AgriSouss, Agadir, Souss...). Documenter la décision si la "
                    "politique interne exige encore une expiration.")
     references = [
-        "NIST SP 800-63B — Memorized secret verifiers (no periodic change without evidence of compromise)",
+        "NIST SP 800-63B rev. 4 — Password verifiers: SHALL NOT require periodic changes; SHALL force a change on evidence of compromise",
         "CIS M365 Foundations — 'Ensure the Password expiration policy is set to Set passwords to never expire (recommended)'",
         "SCuBA MS.AAD.6.1v1 — User passwords SHALL NOT expire",
         "Microsoft Learn — Password policy recommendations for Microsoft 365",

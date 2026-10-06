@@ -15,7 +15,8 @@
 
   What it never does: modify anything, read client secrets, certificates, keys, tokens or
   passwords (PasswordCredentials / KeyCredentials are never requested), call any New-, Set-,
-  Update- or Remove- cmdlet.
+  Update- or Remove- cmdlet against the tenant. (The only Set-* calls are local:
+  Set-StrictMode and Set-Content, which writes the JSON file.)
 
   Sections whose module is not connected (and 'sspr', not exposed by Graph v1.0) are written
   as null: the auditor refuses the file until they are completed by hand (docs/EXPORT.md).
@@ -171,12 +172,24 @@ $ca = foreach ($p in Get-MgIdentityConditionalAccessPolicy -All) {
 Write-Host "[5/7] authorization policy, password expiration, domains"
 $az = Get-MgPolicyAuthorizationPolicy
 $grants = @(Arr $az.DefaultUserRolePermissions.PermissionGrantPoliciesAssigned)
+# Only ManagePermissionGrantsForSelf.* governs user consent (ForOwnedResource.* = group/team owners)
+$selfGrants = @($grants | Where-Object { $_ -like 'ManagePermissionGrantsForSelf.*' })
 $consent = 'none'
-if ($grants -match 'microsoft-user-default-legacy') { $consent = 'allowAll' }
-elseif ($grants -match 'microsoft-user-default-low') { $consent = 'allowVerifiedLowRisk' }
-$guestRole = @{ 'a0b1b346-4d3e-4e8b-98f8-753e3db50fdc' = 'sameAsMember'
+if ($selfGrants -match 'microsoft-user-default-legacy') { $consent = 'allowAll' }
+elseif ($selfGrants.Count) {
+    # microsoft-user-default-low, microsoft-user-default-recommended or a custom policy:
+    # restricted consent, never reported as 'none' (that would hide a residual risk)
+    $consent = 'allowVerifiedLowRisk'
+    if (-not ($selfGrants -match 'microsoft-user-default-(low|recommended)')) {
+        Write-Warning "Custom user consent policy ($($selfGrants -join ', ')): mapped to allowVerifiedLowRisk, review by hand"
+    }
+}
+$guestRole = @{ 'a0b1b346-4d3e-4e8b-98f8-753987be4970' = 'sameAsMember'
                 '10dae51f-b6af-4016-8d66-8c2a99b929b3' = 'limited'
                 '2af84b1e-32c8-42b7-82bc-daa82404023b' = 'restricted' }
+if (-not $guestRole.ContainsKey([string]$az.GuestUserRoleId)) {
+    Write-Warning "Unknown GuestUserRoleId '$($az.GuestUserRoleId)': guestUserAccess left null, complete by hand"
+}
 $authz = [ordered]@{
     userConsent = $consent
     guestUserAccess = $guestRole[[string]$az.GuestUserRoleId]
